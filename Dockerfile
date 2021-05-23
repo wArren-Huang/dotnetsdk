@@ -1,6 +1,7 @@
-ARG DOWNLOAD_SOURCE=https://download.visualstudio.microsoft.com/download/pr/6f3836d9-506e-4284-aa31-93ab52c5395c/8eb25aa85c3953bae3cd1935a893b938/dotnet-sdk-5.0.203-linux-musl-x64.tar.gz
-ARG DOWNLOAD_CHECKSUM=188c4b0259941a69787f8a619b44acea9443eacec04cbe3ed3bd93a35bf801ce41aeb9ae8078f5b05c422e6340b57dbe9ca7373e6a71e126812bff54062db507
+ARG DOWNLOAD_SOURCE=https://download.visualstudio.microsoft.com/download/pr/10758180-a55d-444d-9b9b-0497d6fce4c0/c8941291391ec67f5a07634048905881/dotnet-sdk-3.1.409-linux-musl-x64.tar.gz
+ARG DOWNLOAD_CHECKSUM=ec0e94fbc1b02eee58be344bb201a72cba4cb5c8ac0075adbf2937587ea66e2786e76fcc57cd6e4336ac448be54afbadce063cdc91707d009dc8242e2bfe31a2
 ARG INSTALL_TARGET=/opt/dotnet
+ARG AVRO_TOOLS_VERSION=1.10.2
 
 FROM alpine:3.13.5 AS download
 ARG DOWNLOAD_SOURCE
@@ -16,9 +17,12 @@ RUN tar xzf dotnet.tar.gz -C ${INSTALL_TARGET}
 
 FROM alpine:3.13.5
 ARG INSTALL_TARGET
+ARG AVRO_TOOLS_VERSION
 RUN apk update; apk upgrade
 RUN apk add icu-libs krb5-libs libgcc libintl libssl1.1 libstdc++ zlib
 COPY --from=download ${INSTALL_TARGET} ${INSTALL_TARGET}
 RUN ln -s ${INSTALL_TARGET}/dotnet /usr/local/bin/dotnet
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
 ENV DOTNET_ROOT=${INSTALL_TARGET}
+RUN dotnet tool install --global Apache.Avro.Tools --version ${AVRO_TOOLS_VERSION} && \
+    ln -s /root/.dotnet/tools/avrogen /usr/local/bin/avrogen
